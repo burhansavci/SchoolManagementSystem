@@ -1,0 +1,118 @@
+﻿<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <!-- Sidebar - Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+
+        @if (HttpContext.Current.User.IsInRole("principal"))
+        {<div class="sidebar-brand-icon ">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <div class="sidebar-brand-text mx-3">Müdür Paneli</div>
+        }
+        else if (HttpContext.Current.User.IsInRole("personnel"))
+        { <div class="sidebar-brand-icon ">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <div class="sidebar-brand-text mx-3">Personel Paneli</div>
+        }
+        else if (HttpContext.Current.User.IsInRole("teacher"))
+        { <div class="sidebar-brand-icon ">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <div class="sidebar-brand-text mx-3">Öğretmen Paneli</div>
+        }
+        else if (HttpContext.Current.User.IsInRole("student"))
+        { <div class="sidebar-brand-icon ">
+                <i class="fas fa-book-reader"></i>
+            </div>
+            <div class="sidebar-brand-text mx-3">Öğrenci Paneli</div>
+        }
+
+    </a>
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+    <!-- Nav Item - Dashboard -->
+    @if ((HttpContext.Current.User.IsInRole("teacher") && HttpContext.Current.User.IsInRole("principal")) || HttpContext.Current.User.IsInRole("personnel"))
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/panel/student/getstudents">
+                <i class="fas fa-book-reader"></i>
+                <span>Öğrenciler</span>
+            </a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider">}
+    @if ((HttpContext.Current.User.IsInRole("teacher") && HttpContext.Current.User.IsInRole("principal")) || HttpContext.Current.User.IsInRole("personnel"))
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/panel/teacher/getteachers">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <span>Öğretmenler</span>
+            </a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider">}
+    @if ((HttpContext.Current.User.IsInRole("teacher") && HttpContext.Current.User.IsInRole("principal")))
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/panel/personnel/getpersonnels">
+                <i class="fas fa-user-tie"></i>
+                <span>Personeller</span>
+            </a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider">}
+    <li class="nav-item">
+        <a class="nav-link" href="/panel/timetable/gettimetables">
+            <i class="fas fa-table"></i>
+            <span>Ders Programı</span>
+        </a>
+    </li>
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+    @if ((HttpContext.Current.User.IsInRole("teacher") && HttpContext.Current.User.IsInRole("principal")) || HttpContext.Current.User.IsInRole("personnel"))
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/panel/group/getgroups">
+                <i class="fas fa-school"></i>
+                <span>Sınıflar</span>
+            </a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+    }
+    @if ((HttpContext.Current.User.IsInRole("teacher") && HttpContext.Current.User.IsInRole("principal")) || HttpContext.Current.User.IsInRole("personnel"))
+    {
+        <li class="nav-item">
+            <a class="nav-link" href="/panel/lesson/getlessons">
+                <i class="fas fa-chalkboard"></i>
+                <span>Dersler</span>
+            </a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+    }
+    @if (HttpContext.Current.User.IsInRole("teacher") || HttpContext.Current.User.IsInRole("student"))
+    {
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                <i class="fas fa-edit"></i>
+                <span>Sınavlar</span>
+            </a>
+            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <h6 class="collapse-header">Sınavlar</h6>
+                    <a class="collapse-item" href="/panel/exam/getexams">Sınav Programı</a>
+                    <a class="collapse-item" href="cards.html">Sınav Sounçları</a>
+                </div>
+            </div>
+        </li>
+    }
+
+
+    <!-- Heading -->
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+</ul>

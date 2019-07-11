@@ -1,0 +1,351 @@
+﻿@model List<SMS.UI.Areas.Panel.Models.ExamsGetVm>
+@{
+    ViewBag.Title = "GetExams";
+    Layout = "~/Areas/Panel/Views/Shared/_LayoutPanel.cshtml";
+    SMS.BLL.Converter converter = new SMS.BLL.Converter();
+    var groups = ViewBag.Groups as List<SMS.Models.Entities.Group>;
+    var schedules = ViewBag.Schedules as List<SMS.Models.Entities.Schedule>;
+    var timetables = ViewBag.TimeTables as List<SMS.Models.Entities.TimeTable>;
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Tables</h1>
+<p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the <a target="_blank" href="https://datatables.net">official DataTables documentation</a>.</p>
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Ders Adı</th>
+                        <th>Tür</th>
+                        <th>Tarih</th>
+                        <th>Gün</th>
+                        <th>Ders Saati</th>
+                        @if (!HttpContext.Current.User.IsInRole("student"))
+                        {
+                            <th>Ayarlar</th>
+                        }
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Ders Adı</th>
+                        <th>Tür</th>
+                        <th>Tarih</th>
+                        <th>Gün</th>
+                        <th>Ders Saati</th>
+                        @if (!HttpContext.Current.User.IsInRole("student"))
+                        {
+                            <th>Ayarlar</th>
+                        }
+                    </tr>
+                </tfoot>
+                <tbody>
+
+                    @foreach (var exam in Model)
+                    {
+                        var examStartTime = $"{exam.Exam.ExamDate.ToString("HH:mm")}";
+                        if (exam.Exam.IsActive == false)
+                        {
+                            <tr style="background-color:lightgreen">
+                                <td class="lessonName">@exam.Exam.Lesson.Name</td>
+                                <td class="examNumber">@(exam.Exam.ExamNumber) .Sınav</td>
+                                <td class="examDate">@exam.Exam.ExamDate.ToString("yyyy-MM-dd") </td>
+                                <td class="examDay">@exam.DayName</td>
+                                <td class="examSchedule">@exam.ScheduleName-@examStartTime</td>
+                                @if (!HttpContext.Current.User.IsInRole("student"))
+                                {
+                                    <td class="settings">
+                                        <input type="hidden" class="hiddenExamId" name="examId" value="@exam.Exam.Id" />
+                                        <input type="hidden" class="hiddenLessonId" value="@exam.Exam.LessonId" />
+                                        <input type="hidden" class="hiddenScheduleId" value="@schedules.Where(x=>x.Name==exam.ScheduleName).SingleOrDefault()" />
+                                        <a href="#" class="btn btn-warning btn-circle btn-sm " title=" " data-toggle="modal" data-target="#updateModal">
+                                            <i class="fas fa-user-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-danger btn-circle btn-sm " title=" " data-toggle="modal" data-target="#deleteModal">
+                                            <i class="fas fa-user-minus"></i>
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+
+                        }
+                        else
+                        {
+                            <tr>
+                                <td class="lessonName">@exam.Exam.Lesson.Name</td>
+                                <td class="examNumber">@(exam.Exam.ExamNumber) .Sınav</td>
+                                <td class="examDate">@exam.Exam.ExamDate.ToString("yyyy-MM-dd") </td>
+                                <td class="examDay">@exam.DayName</td>
+                                <td class="examSchedule">@exam.ScheduleName-@examStartTime</td>
+                                @if (!HttpContext.Current.User.IsInRole("student"))
+                                {
+                                    <td class="settings">
+                                        <input type="hidden" class="hiddenExamId" name="examId" value="@exam.Exam.Id" />
+                                        <input type="hidden" class="hiddenLessonId" value="@exam.Exam.LessonId" />
+                                        <input type="hidden" class="hiddenScheduleId" value="@schedules.Where(x => x.Name == exam.ScheduleName).SingleOrDefault().Id" />
+                                        <a href="#" class="btn btn-warning btn-circle btn-sm " title=" " data-toggle="modal" data-target="#updateModal">
+                                            <i class="fas fa-user-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-danger btn-circle btn-sm " title=" " data-toggle="modal" data-target="#deleteModal">
+                                            <i class="fas fa-user-minus"></i>
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+                        }
+
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!-- /.container-fluid -->
+<!--Delete Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Bu sınav tarihini silmek istediğinizden emin misiniz?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Eğer  <strong id="toBeDeletedExamDate"></strong> tarihindeki <strong id="toBeDeletedExamLesson"></strong> <strong id="toBeDeletedExamNumber"></strong>ını silmek istiyorsanız "Sil" butonuna basınız.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">İptal</button>
+                <a class="btn btn-primary btn-delete" href="#">Sil</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalTitle">Yeni Sınav Ekle</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <form class="user" id="addForm" method="post" action="/panel/exam/post">
+                <div class="modal-body">
+                    @*@Html.AntiForgeryToken()*@
+                    <input type="hidden" name="selectedGroupId" value="@ViewBag.selectedGroupId" />
+                    <div class="form-group">
+                        <label>Sınav Tarihi:</label>
+                        <input id="datepicker" name="ExamDate" placeholder="Bir Tarih seçiniz" />
+                    </div>
+                    <div class="form-group">
+                        <label>Kaçıncı Sınav:</label>
+                        <input id="examNumber" type="text" name="ExamNumber" class="form-control" placeholder="Kaçıncı Sınav.." />
+                    </div>
+                    <div class="form-group">
+                        <label>Ders Saati:</label>
+                        <select class="form-control" name="ScheduleId" id="scheduleSelect">
+                            <option hidden disabled selected value="firstOption"> -- Bir Ders Saati Seçiniz -- </option>
+                            @foreach (var schedule in schedules)
+                            {
+                                <option value="@schedule.Id">@schedule.Name-@schedule.StartTime</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ders:</label>
+                        <select class="form-control" name="LessonId" id="lessonSelect">
+                            <option hidden disabled selected value="firstOption"> -- Bir Ders Seçiniz -- </option>
+                            @foreach (var timetable in timetables.GroupBy(x => x.Lesson).Select(x => new { LessonName = x.Key.Name, LessonId = x.Key.Id }))
+                            {
+                                <option value="@timetable.LessonId">@timetable.LessonName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="addButton" class="btn btn-primary btn-user btn-block">Ekle</button>
+                    <button type="button" class="btn btn-secondary btn-user btn-block btn-cancel" style="margin-top:0px" data-dismiss="modal">İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--Update-->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalTitle">Sınav Güncelle</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <form class="user" id="updateForm" method="post" action="/panel/exam/update">
+                <div class="modal-body">
+                    @*@Html.AntiForgeryToken()*@
+                    <input type="hidden" name="selectedGroupId" value="@ViewBag.selectedGroupId" />
+                    <div class="form-group">
+                        <label>Sınav Tarihi:</label>
+                        <input id="datepickerUpdate" name="ExamDate" placeholder="Bir Tarih seçiniz" />
+                    </div>
+                    <div class="form-group">
+                        <label>Kaçıncı Sınav:</label>
+                        <input id="examNumberUpdate" type="text" name="ExamNumber" class="form-control" placeholder="Kaçıncı Sınav.." />
+                    </div>
+                    <div class="form-group">
+                        <label>Ders Saati:</label>
+                        <select class="form-control" name="ScheduleId" id="scheduleSelectUpdate">
+                            <option hidden disabled selected value="firstOption"> -- Bir Ders Saati Seçiniz -- </option>
+                            @foreach (var schedule in schedules)
+                            {
+                                <option value="@schedule.Id">@schedule.Name-@schedule.StartTime</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Ders:</label>
+                        <select class="form-control" name="LessonId" id="lessonSelectUpdate">
+                            <option hidden disabled selected value="firstOption"> -- Bir Ders Seçiniz -- </option>
+                            @foreach (var timetable in timetables.GroupBy(x => x.Lesson).Select(x => new { LessonName = x.Key.Name, LessonId = x.Key.Id }))
+                            {
+                                <option value="@timetable.LessonId">@timetable.LessonName</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="updateButton" class="btn btn-primary btn-user btn-block">Güncelle</button>
+                    <button type="button" class="btn btn-secondary btn-user btn-block btn-cancel" style="margin-top:0px" data-dismiss="modal">İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section styles{
+    <link href="~/Content/Assets/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" />
+}
+@section scripts{
+    <script src="~/Scripts/Assets/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/Assets/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Scripts/Assets/datatables/datatables-demo.js"></script>
+    @if (!HttpContext.Current.User.IsInRole("student"))
+    {
+        <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js"></script>
+        <script src="https://unpkg.com/gijgo@1.9.13/js/messages/messages.tr-tr.js"></script>
+    }
+    <script>
+    $(document).ready(function () {
+    //datatable new button
+    $('#dataTable_length').append($(`<label>
+        <label class=" col-sm-2 col-md-1"></label>
+        <a href="#" data-target="#addModal" data-toggle="modal" class="btn btn-success btn-icon-split btn-sm">
+            <span class="icon text-gray-50">
+                <i class="fas fa-user-plus"></i>
+            </span>
+            <span class="text" style="font-size:16px">Yeni Sınav Ekle</span>
+        </a>
+    </label>`)).html();
+    $('#dataTable_length').append($(` <label>
+        <form action="/panel/exam/getexams" method="get">
+            <div class="dropdown mb-3">
+                <label class=" col-sm-8 col-md-4"> Sınıf:</label>
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    @groups.Where(x => x.Id == ViewBag.selectedGroupId).FirstOrDefault().Level-@groups.Where(x => x.Id == ViewBag.selectedGroupId).FirstOrDefault().Name
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    @foreach (var group in groups.Where(x => x.IsActive == true).OrderBy(x => x.Level))
+
+                    {<label class="dropdown-item" style="cursor:pointer" onmouseover="this.style.background = 'gray'
+    this.style.color = 'white'" ; onmouseout="this.style.background = 'white'
+    this.style.color='black'" ;><input type="submit" style="visibility:hidden" name="selectedGroupId" value="@group.Id" />@group.Level-@group.Name</label>
+}
+                </div>
+            </div>
+        </form>
+    </label>`))
+
+    $('#datepicker').datepicker({
+    uiLibrary: 'bootstrap4',
+    locale: 'tr-tr'
+    });
+    $('#datepickerUpdate').datepicker({
+    uiLibrary: 'bootstrap4',
+    locale: 'tr-tr'
+    });
+    //Mouseover functions
+    $('table#dataTable tbody').on('mouseover', 'tr td .btn-warning', function () {
+    $(this).attr('title', 'Güncelle');
+    });
+    $('table#dataTable tbody').on('mouseover', 'tr td .btn-danger', function () {
+    $(this).attr('title', 'Sil');
+    });
+    //Global Variables
+    var redirectUrl = location.href;
+    var table = $('#dataTable').DataTable();
+    //Add
+    $(".btn-success").click(function () {
+    $("#datepicker").val("");
+    $("#examNumber").val("");
+    $("#scheduleSelect").append("<option hidden disabled selected value=" + " firstOption" + "> -- Bir Ders Saati Seçiniz -- </option>" );
+                                         $("#lessonSelect").append("<option hidden disabled selected value=" + " firstOption" + " > --Bir Ders Seçiniz-- </option >" );
+                                                                            });
+            //Delete
+    $('table#dataTable tbody').on('click', 'tr td .btn-danger', function () {
+    currentRow = $(this).closest("tr");
+    $("#toBeDeletedExamDate").html(currentRow.find(".examDate").html());
+    $("#toBeDeletedExamLesson").html(currentRow.find(".lessonName").html());
+    $("#toBeDeletedExamNumber").html(currentRow.find(".examNumber").html());
+    });
+    $('#dataTable tbody').on('click', 'tr', function () {
+    if ($(this).hasClass('selected')) {
+    $(this).removeClass('selected');
+    }
+    else {
+    table.$('tr.selected').removeClass('selected');
+    $(this).addClass('selected');
+    }
+    });
+    $(".btn-delete").click(function () {
+    var examId = currentRow.find(".settings").children(".hiddenExamId").attr("value");
+    $.ajax({
+    url: "/panel/exam/delete",
+    method: "post",
+    data: {
+    examId: examId,
+    },
+    success: function (res) {
+    alert("Silme işlemi başarıyla gerçekleşti.");
+    $("#deleteModal").modal("hide");
+    table.row('.selected').remove().draw(false);
+    }
+    });
+    });
+
+    //Update
+    $('table#dataTable tbody').on('click', 'tr td .btn-warning', function () {
+    currentRow = $(this).closest("tr");
+    $("#datepickerUpdate").val(currentRow.find(".examDate").html());
+    $("#examNumberUpdate").val(currentRow.find(".examNumber").html().split('.')[0]);
+    $("#scheduleSelectUpdate").val(currentRow.find(".hiddenScheduleId").val());
+    $("#lessonSelectUpdate").val(currentRow.find(".hiddenLessonId").val());
+    });
+    });
+    </script>
+}
+
+
+
+
+
+
+
+
+
+

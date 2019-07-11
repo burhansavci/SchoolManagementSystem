@@ -1,0 +1,207 @@
+﻿@model List<SMS.UI.Areas.Panel.Models.PersonnelGetVm>
+@{
+    ViewBag.Title = "GetPersonnels";
+    Layout = "~/Areas/Panel/Views/Shared/_LayoutPanel.cshtml";
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Tables</h1>
+<p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the <a target="_blank" href="https://datatables.net">official DataTables documentation</a>.</p>
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>TC No</th>
+                        <th>Kullanıcı İsmi</th>
+                        <th>İsim</th>
+                        <th>Soy İsim</th>
+                        <th>Telefon Numara</th>
+                        <th>EMail</th>
+                        <th>Ayarlar</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>TC No</th>
+                        <th>Kullanıcı İsmi</th>
+                        <th>İsim</th>
+                        <th>Soy İsim</th>
+                        <th>Telefon Numara</th>
+                        <th>EMail</th>
+                        <th>Ayarlar</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    @foreach (var personnel in Model)
+                    {
+                        <tr>
+                            <td class="tcNo">@personnel.TcNo</td>
+                            <td class="userName">@personnel.UserName</td>
+                            <td class="firstName">@personnel.FirstName</td>
+                            <td class="lastName">@personnel.LastName</td>
+                            <td class="phoneNumber">@personnel.PhoneNumber</td>
+                            <td class="email">@personnel.Email</td>
+                            <td class="settings">
+                                <input type="hidden" class="hiddenUserId" value="@personnel.Id" />
+                                <a href="#" class="btn btn-warning btn-circle btn-sm " title=" " data-toggle="modal" data-target="#updateModal">
+                                    <i class="fas fa-user-edit"></i>
+                                </a>
+                                <a href="#" class="btn btn-danger btn-circle btn-sm " title=" " data-toggle="modal" data-target="#deleteModal">
+                                    <i class="fas fa-user-minus"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- /.container-fluid -->
+<!--Delete Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Bu kullanıcıyı silmek istediğinizden emin misiniz?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">Eğer  <strong id="toBeDeletedUser"></strong>  adlı kullanıcıyı silmek istiyorsanız "Sil" butonuna basınız.</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">İptal</button>
+                <a class="btn btn-primary btn-delete" href="#">Sil</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUpdateModalTitle">Yeni Personel Ekle</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @*@Html.AntiForgeryToken()*@
+                <form class="user" id="addForm">
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <label>İsim:</label>
+                            <input type="text" class="form-control" id="addFirstName" placeholder="İsim...">
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Soy İsim:</label>
+                            <input type="text" class="form-control" id="addLastName" placeholder="Soy İsim...">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <label>Kullanıcı İsmi:</label>
+                            <input type="text" class="form-control" id="addUserName" placeholder="Kullanıcı İsmi">
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Telefon Numarası</label>
+                            <input type="text" class="form-control" id="addPhoneNumber" placeholder="Telefon Numarası...">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <label>Email:</label>
+                            <input type="text" class="form-control" id="addEmail" placeholder="Email...">
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Tc Kimlik No:</label>
+                            <input type="text" class="form-control" id="addTcNo" placeholder="TC No...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" id="addPassword" placeholder="Password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" id="addButton" class="btn btn-primary btn-user btn-block btn-submit">Ekle</button>
+                <button type="button" class="btn btn-secondary btn-user btn-block btn-cancel" style="margin-top:0px" data-dismiss="modal">İptal</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Update-->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUpdateModalTitle">Personel Güncelle</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @*@Html.AntiForgeryToken()*@
+                <form class="user" id="updateForm">
+                    <input type="hidden" id="hiddenUserId" value="" />
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <label>İsim:</label>
+                            <input type="text" class="form-control" id="updateFirstName" placeholder="İsim...">
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Soy İsim:</label>
+                            <input type="text" class="form-control" id="updateLastName" placeholder="Soy İsim...">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <label>Kullanıcı İsmi:</label>
+                            <input type="text" class="form-control" id="updateUserName" placeholder="Kullanıcı İsmi">
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Telefon Numarası</label>
+                            <input type="text" class="form-control" id="updatePhoneNumber" placeholder="Telefon Numarası...">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-sm-6 mb-3 mb-sm-0">
+                            <label>Email:</label>
+                            <input type="text" class="form-control" id="updateEmail" placeholder="Email...">
+                        </div>
+                        <div class="col-sm-6">
+                            <label>Tc Kimlik No:</label>
+                            <input type="text" class="form-control" id="updateTcNo" placeholder="TC No...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" id="updatePassword" placeholder="Password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" id="updateButton" class="btn btn-primary btn-user btn-block btn-submit">Güncelle</button>
+                <button type="button" class="btn btn-secondary btn-user btn-block btn-cancel" style="margin-top:0px" data-dismiss="modal">İptal</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section styles{
+    <link href="~/Content/Assets/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" />
+}
+@section scripts{
+    <script src="~/Scripts/Assets/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/Assets/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Scripts/Assets/datatables/datatables-demo.js"></script>
+    <script src="~/Scripts/Custom/GetPersonnel.js"></script>
+}
+
+

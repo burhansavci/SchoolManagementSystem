@@ -1,0 +1,23 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/Panel/Views/Shared/_LayoutPanel.cshtml";
+}
+
+@if (HttpContext.Current.User.IsInRole("teacher")&&!HttpContext.Current.User.IsInRole("principal"))
+{
+    <h1>teacher</h1>
+}
+else if (HttpContext.Current.User.IsInRole("personnel"))
+{
+    <h1>personnel</h1>
+}
+else if (HttpContext.Current.User.IsInRole("principal")&&HttpContext.Current.User.IsInRole("teacher"))
+{
+    <h1>principal</h1>
+}
+else if (HttpContext.Current.User.IsInRole("student"))
+{
+    <h1>student</h1>
+}
+

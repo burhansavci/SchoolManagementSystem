@@ -1,0 +1,335 @@
+﻿@*@model List<SMS.UI.Areas.Panel.Models.TimeTableGetVm>*@
+@model SMS.UI.Areas.Panel.Models.TimeTableGetVm
+@{
+    ViewBag.Title = "GetTimeTables";
+    Layout = "~/Areas/Panel/Views/Shared/_LayoutPanel.cshtml";
+    var selectedGroupId = Model.selectedGroupId;
+}
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Tables</h1>
+<p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the <a target="_blank" href="https://datatables.net">official DataTables documentation</a>.</p>
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">@Model.Periods.FirstOrDefault().Name</h6>
+    </div>
+    <div class="card-body">
+        @if (!HttpContext.Current.User.IsInRole("student"))
+        {
+            <div class="col-sm-12 col-md-6">
+                <form action="/panel/timetable/gettimetables" method="get">
+                    <div class="dropdown mb-3">
+                        <label> <strong>Sınıf:</strong> </label>
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            @Model.Groups.Where(x => x.Id == Model.selectedGroupId).FirstOrDefault().Level - @Model.Groups.Where(x => x.Id == Model.selectedGroupId).FirstOrDefault().Name
+                        </button>
+
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            @foreach (var group in Model.Groups.Where(x => x.IsActive == true).OrderBy(x => x.Level))
+                            {<label class="dropdown-item" style="cursor:pointer" onmouseover="this.style.background = 'gray'
+    this.style.color = 'white'" ; onmouseout="this.style.background = 'white'
+    this.style.color='black'" ;><input type="submit" style="visibility:hidden" name="selectedGroupId" value="@group.Id" />@group.Level-@group.Name</label>
+}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        }
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="transform-origin: 20% 40%">Günler/Ders Saatleri</th>
+                        <th id="0">1. Ders</th>
+                        <th id="1">2. Ders</th>
+                        <th id="2">3. Ders</th>
+                        <th id="3">4. Ders</th>
+                        <th id="4">5. Ders</th>
+                        <th id="5">6. Ders</th>
+                        <th id="6">7. Ders</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @for (int i = 0; i < Model.TimeTable.GetLength(0); i++)
+                    {
+                        <tr>
+                            @for (int j = 0; j < Model.TimeTable.GetLength(1); j++)
+                            {
+                                if (j == 0)
+                                {
+                                    <th id="@Model.Days[i].Id">@Model.Days[i].Name</th>
+                                }
+                                if (Model.TimeTable[i, j] == null)
+                                {
+                                    if (!HttpContext.Current.User.IsInRole("student"))
+                                    {
+                                        <td id="@i-@j" style="width:160px;height:80px;padding:0px 0px 0px 0px">  <button class="btn btn-info empty-td" type="button" data-toggle="modal" data-target="#addModal" style="display:block;width:100%;height:100%;border-radius:inherit">Boş Ders</button></td>
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        <td id="@i-@j" style="width:160px;height:80px;padding:0px 0px 0px 0px">  <button class="btn btn-info empty-td" type="button" style="display:block;width:100%;height:100%;border-radius:inherit">Boş Ders</button></td>
+                                        continue;
+                                    }
+
+                                }
+                                <td id="@i-@j" class="dropdown no-arrow " style="width:160px;height:80px;padding:0px 0px 0px 0px">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="display:block;width:100%;height:100%;border-radius:inherit">
+                                        @Model.TimeTable[i, j].Lesson.Name<br />@Model.TimeTable[i, j].Teacher.FirstName @Model.TimeTable[i, j].Teacher.LastName
+                                        <input type="hidden" id="hiddenLessonId" value="@Model.TimeTable[i,j].LessonId" />
+                                        <input type="hidden" id="hiddenTeacherId" value="@Model.TimeTable[i,j].TeacherId" />
+                                    </button>
+                                    @if (!HttpContext.Current.User.IsInRole("student"))
+                                    {
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <button class="btn btn-warning" data-toggle="modal" data-target="#updateModal">Güncelle</button>
+                                            <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Sil</button>
+                                        </div>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<!--Add Modal-->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addModalTitle"></h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <form class="user" id="addForm" action="/panel/timetable/post">
+                <div class="modal-body">
+                    <input type="hidden" name="GroupId" value=" @Model.Groups.Where(x => x.Id == Model.selectedGroupId).FirstOrDefault().Id" />
+                    <input type="hidden" name="DayId" value=" " id="dayId" />
+                    <input type="hidden" name="ScheduleId" value=" " id="scheduleId" />
+                    <input type="hidden" name="PeriodId" value="@Model.Periods.FirstOrDefault().Id" />
+                    <input type="hidden" name="selectedGroupId" value="@selectedGroupId" />
+                    <div class="form-group">
+                        <select class="form-control" name="LessonId" id="lessonSelect">
+                            <option hidden disabled selected value="firstOption"> -- Bir Ders Seçiniz -- </option>
+                            @foreach (var lesson in Model.Lessons.Where(x => x.IsActive == true))
+                            {
+                                <option value="@lesson.Id">@lesson.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" id="teacherSelect" name="TeacherId">
+                            <option hidden disabled selected value="firstOption"> -- Bir Öğretmen Seçiniz -- </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="addButton" class="btn btn-primary btn-user btn-block btn-submit">Ekle</button>
+                    <button type="button" class="btn btn-secondary btn-user btn-block btn-cancel" style="margin-top:0px" data-dismiss="modal">İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--Update Modal-->
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateModalTitle"></h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <form class="user" id="updateForm" action="/panel/timetable/update">
+                <div class="modal-body">
+                    <input type="hidden" name="GroupId" value=" @Model.Groups.Where(x => x.Id == Model.selectedGroupId).FirstOrDefault().Id" />
+                    <input type="hidden" name="DayId" value=" " id="dayIdUpdate" />
+                    <input type="hidden" name="ScheduleId" value=" " id="scheduleIdUpdate" />
+                    <input type="hidden" name="PeriodId" value="@Model.Periods.FirstOrDefault().Id" />
+                    <input type="hidden" name="selectedGroupId" value="@selectedGroupId" />
+                    <div class="form-group">
+                        <select class="form-control" name="LessonId" id="lessonSelectUpdate">
+                            <option hidden disabled selected value="firstOption"> -- Bir Ders Seçiniz -- </option>
+                            @foreach (var lesson in Model.Lessons.Where(x => x.IsActive == true))
+                            {
+                                <option value="@lesson.Id">@lesson.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select class="form-control" id="teacherSelectUpdate" name="TeacherId">
+                            <option hidden disabled selected value="firstOption"> -- Bir Öğretmen Seçiniz -- </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="updateButton" class="btn btn-primary btn-user btn-block btn-submit">Güncelle</button>
+                    <button type="button" class="btn btn-secondary btn-user btn-block btn-cancel" style="margin-top:0px" data-dismiss="modal">İptal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--Delete Modal-->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalTitle"></h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <form class="user" id="deleteForm" action="/panel/timetable/delete">
+                <input type="hidden" name="GroupId" value=" @Model.Groups.Where(x => x.Id == Model.selectedGroupId).FirstOrDefault().Id" />
+                <input type="hidden" name="DayId" value=" " id="dayIdDelete" />
+                <input type="hidden" name="ScheduleId" value=" " id="scheduleIdDelete" />
+                <input type="hidden" name="selectedGroupId" value="@selectedGroupId" />
+                <div class="modal-body" id="deleteModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">İptal</button>
+                    <button class="btn btn-primary" type="submit">Sil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section scripts{
+<script>
+    $(document).ready(function () {
+    var redirectUrl = location.href;
+    var selectedOption;
+    var lessonTeachers = [];
+    @foreach (var item in Model.LessonTeachers)
+    {
+        <text>
+            var lessonTeacher = {
+            lessonId: @item.LessonId,
+            lessonName:"@item.Lesson.Name",
+            teacherId:"@item.TeacherId",
+            teacherFirstName:"@item.Teacher.FirstName",
+            teacherLastName:"@item.Teacher.LastName"};
+            lessonTeachers.push(lessonTeacher);
+        </text>
+    }
+    var currentTd;
+    var currentRow;
+    //Add
+    $(".empty-td").click(function () {
+    currentTd = $(this).closest("td");
+    currentRow = $(this).closest("tr");
+    var coordinates = currentTd.attr("id").split("-");
+    $("#scheduleId").val(parseInt(coordinates[1]) + 1);
+    $("#addModalTitle").html("");
+    $("#dataTable thead tr th").each(function (index, item) {
+    if (coordinates[1] == $(item).attr("id")) {
+    $("#addModalTitle").append($(currentRow).children("th").html() + " " + $(item).html() + " saatine ders ekle");
+    }
+    });
+    $("#dayId").val($(currentRow).children("th").attr("id"));
+
+
+    })
+    $("#lessonSelect").change(function () {
+    $("#teacherSelect option").each(function (index, item) {
+    item.remove();
+    });
+    var selectedLessonId = $(this).val()
+    var teachers = lessonTeachers.filter(function (item) {
+    return item.lessonId == selectedLessonId
+    });
+    var startingOption = $("<option hidden disabled selected value=" + " firstOption" + "> -- Bir Öğretmen Seçiniz -- </option>" )
+                                    $("#teacherSelect").append(startingOption);
+                                    $(teachers).each(function (index, item) {
+                                    var newOption=$("<option></option>");
+    $(newOption).val(`${item.teacherId}`);
+    $(newOption).html(`${item.teacherFirstName} ${item.teacherLastName}`);
+    $("#teacherSelect").append(newOption);
+    })
+    });
+    //Update
+    $(".btn-warning").click(function () {
+    currentTd = $(this).closest("td");
+    currentRow = $(this).closest("tr");
+    var coordinates = currentTd.attr("id").split("-");
+    $("#scheduleIdUpdate").val(parseInt(coordinates[1]) + 1);
+    $("#updateModalTitle").html("");
+    $("#dataTable thead tr th").each(function (index, item) {
+    if (coordinates[1] == $(item).attr("id")) {
+    $("#updateModalTitle").append($(currentRow).children("th").html() + " " + $(item).html() + " saatini güncelle");
+    }
+    });
+    $("#dayIdUpdate").val($(currentRow).children("th").attr("id"));
+
+    $("#teacherSelectUpdate option").each(function (index, item) {
+    item.remove();
+    });
+    var selectedLessonId = $(currentTd).children("button").children("#hiddenLessonId").attr("value");
+    $("#lessonSelectUpdate").val(selectedLessonId);
+
+    var selectedTeacherId = $(currentTd).children("button").children("#hiddenTeacherId").attr("value");
+    var teachers = lessonTeachers.filter(function (item) {
+    return item.lessonId == selectedLessonId
+    });
+
+    $(teachers).each(function (index, item) {
+    var newOption = $("<option></option>");
+    $(newOption).val(`${item.teacherId}`);
+    $(newOption).html(`${item.teacherFirstName} ${item.teacherLastName}`);
+    $("#teacherSelectUpdate").append(newOption);
+    })
+    var selectedTeacher = teachers.filter(function (item) {
+    return item.teacherId == selectedTeacherId
+    });
+    $("#teacherSelectUpdate").val(`${selectedTeacher[0].teacherId}`);
+    });
+
+    $("#lessonSelectUpdate").change(function () {
+    $("#teacherSelectUpdate option").each(function (index, item) {
+    item.remove();
+    });
+    var selectedLessonId = $(this).val()
+    var teachers = lessonTeachers.filter(function (item) {
+    return item.lessonId == selectedLessonId
+    });
+    var startingOption = $("<option hidden disabled selected value=" + " firstOption" + "> -- Bir Öğretmen Seçiniz -- </option>" )
+                                    $("#teacherSelectUpdate").append(startingOption);
+                                    $(teachers).each(function (index, item) {
+                                    var newOption=$("<option></option>");
+    $(newOption).val(`${item.teacherId}`);
+    $(newOption).html(`${item.teacherFirstName} ${item.teacherLastName}`);
+    $("#teacherSelectUpdate").append(newOption);
+    })
+    });
+    //Delete
+    $(".btn-danger").click(function () {
+    currentTd = $(this).closest("td");
+    currentRow = $(this).closest("tr");
+    var coordinates = currentTd.attr("id").split("-");
+    $("#scheduleIdDelete").val(parseInt(coordinates[1]) + 1);
+    $("#deleteModalTitle").html("");
+    $("#dataTable thead tr th").each(function (index, item) {
+    if (coordinates[1] == $(item).attr("id")) {
+    $("#deleteModalTitle").append($(currentRow).children("th").html() + " " + $(item).html() + " saatini silmek istiyor musunuz?");
+    }
+    });
+    $("#dayIdDelete").val($(currentRow).children("th").attr("id"));
+    var selectedLessonId = $(currentTd).children("button").children("#hiddenLessonId").attr("value");
+    var selectedTeacherId = $(currentTd).children("button").children("#hiddenTeacherId").attr("value");
+    var teacher = lessonTeachers.filter(function (item) {
+    return (item.lessonId == selectedLessonId && item.teacherId == selectedTeacherId)
+    });
+    $("#deleteModalBody").html("");
+    $("#deleteModalBody").append(`<strong>${teacher[0].teacherFirstName} ${teacher[0].teacherLastName}</strong> tarafından verilen <strong>${teacher[0].lessonName}</strong> dersini şu anki ders programından silmek için <strong>'Sil'</strong> butonuna tıklaynız`)
+    });
+        });
+</script>
+}
+
