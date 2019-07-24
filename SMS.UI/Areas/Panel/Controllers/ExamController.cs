@@ -85,6 +85,7 @@ namespace SMS.UI.Areas.Panel.Controllers
             service.UnitOfWork.Save();
             return RedirectToAction("GetExams", new { selectedGroupId = data.selectedGroupId });
         }
+
         [Authorize(Roles = "principal,personnel")]
         public ActionResult Update(ExamUpdateVm data)
         {
@@ -120,6 +121,7 @@ namespace SMS.UI.Areas.Panel.Controllers
             service.UnitOfWork.Save();
             return RedirectToAction("GetExams", new { selectedGroupId = data.selectedGroupId });
         }
+
         [Authorize(Roles = "principal,personnel")]
         public void Delete(int examId)
         {

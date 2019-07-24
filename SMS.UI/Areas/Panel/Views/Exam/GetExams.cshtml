@@ -243,7 +243,9 @@
     <script>
     $(document).ready(function () {
     //datatable new button
-    $('#dataTable_length').append($(`<label>
+        @if (!HttpContext.Current.User.IsInRole("student")) {
+            <text>
+        $('#dataTable_length').append($(`<label>
         <label class=" col-sm-2 col-md-1"></label>
         <a href="#" data-target="#addModal" data-toggle="modal" class="btn btn-success btn-icon-split btn-sm">
             <span class="icon text-gray-50">
@@ -270,7 +272,8 @@
             </div>
         </form>
     </label>`))
-
+        </text>
+        }
     $('#datepicker').datepicker({
     uiLibrary: 'bootstrap4',
     locale: 'tr-tr'

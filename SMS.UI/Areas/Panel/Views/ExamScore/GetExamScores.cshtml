@@ -1,0 +1,114 @@
+﻿@model List<SMS.UI.Areas.Panel.Models.ExamsGetVm>
+@{
+    ViewBag.Title = "GetExamScores";
+    Layout = "~/Areas/Panel/Views/Shared/_LayoutPanel.cshtml";
+    var schedules = ViewBag.Schedules as List<SMS.Models.Entities.Schedule>;
+}
+
+<!-- Page Heading -->
+<h1 class="h3 mb-2 text-gray-800">Tables</h1>
+<p class="mb-4">DataTables is a third party plugin that is used to generate the demo table below. For more information about DataTables, please visit the <a target="_blank" href="https://datatables.net">official DataTables documentation</a>.</p>
+<!-- DataTales Example -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Ders Adı</th>
+                        <th>Tür</th>
+                        <th>Tarih</th>
+                        <th>Gün</th>
+                        <th>Ders Saati</th>
+                        @if (!HttpContext.Current.User.IsInRole("student"))
+                        {
+                            <th>Ayarlar</th>
+                        }
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>Ders Adı</th>
+                        <th>Tür</th>
+                        <th>Tarih</th>
+                        <th>Gün</th>
+                        <th>Ders Saati</th>
+                        @if (!HttpContext.Current.User.IsInRole("student"))
+                        {
+                            <th>Ayarlar</th>
+                        }
+                    </tr>
+                </tfoot>
+                <tbody>
+
+                    @foreach (var exam in Model)
+                    {
+                        var examStartTime = $"{exam.Exam.ExamDate.ToString("HH:mm")}";
+                        if (exam.Exam.IsActive == false)
+                        {
+                            <tr style="background-color:lightgreen">
+                                <td class="lessonName">@exam.Exam.Lesson.Name</td>
+                                <td class="examNumber">@(exam.Exam.ExamNumber) .Sınav</td>
+                                <td class="examDate">@exam.Exam.ExamDate.ToString("yyyy-MM-dd") </td>
+                                <td class="examDay">@exam.DayName</td>
+                                <td class="examSchedule">@exam.ScheduleName-@examStartTime</td>
+                                @if (!HttpContext.Current.User.IsInRole("student"))
+                                {
+                                    <td class="settings">
+                                        <input type="hidden" class="hiddenExamId" name="examId" value="@exam.Exam.Id" />
+                                        <input type="hidden" class="hiddenLessonId" value="@exam.Exam.LessonId" />
+                                        <input type="hidden" class="hiddenScheduleId" value="@schedules.Where(x=>x.Name==exam.ScheduleName).SingleOrDefault()" />
+                                        <a href="#" class="btn btn-warning btn-circle btn-sm " title=" " data-toggle="modal" data-target="#updateModal">
+                                            <i class="fas fa-user-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-danger btn-circle btn-sm " title=" " data-toggle="modal" data-target="#deleteModal">
+                                            <i class="fas fa-user-minus"></i>
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+
+                        }
+                        else
+                        {
+                            <tr>
+                                <td class="lessonName">@exam.Exam.Lesson.Name</td>
+                                <td class="examNumber">@(exam.Exam.ExamNumber) .Sınav</td>
+                                <td class="examDate">@exam.Exam.ExamDate.ToString("yyyy-MM-dd") </td>
+                                <td class="examDay">@exam.DayName</td>
+                                <td class="examSchedule">@exam.ScheduleName-@examStartTime</td>
+                                @if (!HttpContext.Current.User.IsInRole("student"))
+                                {
+                                    <td class="settings">
+                                        <input type="hidden" class="hiddenExamId" name="examId" value="@exam.Exam.Id" />
+                                        <input type="hidden" class="hiddenLessonId" value="@exam.Exam.LessonId" />
+                                        <input type="hidden" class="hiddenScheduleId" value="@schedules.Where(x => x.Name == exam.ScheduleName).SingleOrDefault().Id" />
+                                        <a href="#" class="btn btn-warning btn-circle btn-sm " title=" " data-toggle="modal" data-target="#updateModal">
+                                            <i class="fas fa-user-edit"></i>
+                                        </a>
+                                        <a href="#" class="btn btn-danger btn-circle btn-sm " title=" " data-toggle="modal" data-target="#deleteModal">
+                                            <i class="fas fa-user-minus"></i>
+                                        </a>
+                                    </td>
+                                }
+                            </tr>
+                        }
+
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@section styles{
+    <link href="~/Content/Assets/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" />
+}
+@section scripts{
+    <script src="~/Scripts/Assets/datatables/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/Assets/datatables/dataTables.bootstrap4.min.js"></script>
+    <script src="~/Scripts/Assets/datatables/datatables-demo.js"></script>
+}
+
