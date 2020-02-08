@@ -17,6 +17,8 @@ namespace SMS.UI.Controllers
         DataService service = new DataService();
         public ActionResult SignIn()
         {
+            //Test
+
             if (HttpContext.GetOwinContext().Authentication.User.Identity.IsAuthenticated)
                 return Redirect("/panel");
 
